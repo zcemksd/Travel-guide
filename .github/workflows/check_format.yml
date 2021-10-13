@@ -1,0 +1,30 @@
+name: Checks format
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+jobs:
+  Checks-format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - id: setup-python
+        name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        uses: py-actions/py-dependency-install@v2
+        with:
+          path: ".ci/requirements.txt"
+      - name: Check files
+        run: python .ci/check_scripts.py
+      - name: test code
+        # Only run pytest when changes happened in the .ci directory
+        # it needs that checkout actions fetch all the branches (fetch-depth 0) to see main.
+        run: if $(git diff --name-only HEAD..origin/main | grep -q ".ci"); then pytest .ci/; fi
